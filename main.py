@@ -22,32 +22,6 @@ FUEL_DECREMENT = 0.1
 TEXT_TIME = 20
 
 
-# some functions for vector math
-
-def magnitude(v):
-    return math.sqrt(sum(v[i]*v[i] for i in range(len(v))))
-
-def add(u, v):
-    return [(a+b) for (a, b) in zip(u, v)]
-
-def sub(u, v):
-    return [(a-b) for (a, b) in zip(u, v)]
-
-def dot(u, v):
-    return sum((a*b) for a, b in zip(u, v))
-
-def normalize(v):
-    vmag = magnitude(v)
-    return [ v[i]/vmag  for i in range(len(v)) ]
-
-def length(v):
-  return math.sqrt(dot(v, v))
-
-def angle(v1, v2):
-  return math.acos(dot(v1, v2) / (length(v1) * length(v2)))
-
-
-
 class Space(pygame.sprite.Sprite):
 
     def __init__(self, location, picture):
@@ -200,8 +174,11 @@ class Player(pygame.sprite.Sprite):
 
             if key[pygame.K_UP]:
                 self.speed += SPEED_INCREMENT
+
+                game.sound['accel'].play()
             else:
                 self.speed -= SPEED_DECREMENT
+                game.sound['accel'].stop()
 
             if self.speed < 0:
                 self.speed = 0
@@ -291,9 +268,10 @@ class Game(object):
         self.character.append(Character((430, 400), "Go to the green planet!"))
 
         self.sound = {}
-        self.sound['bump'] = pygame.mixer.Sound('sound/ship_destroy.wav')
+        self.sound['bump'] = pygame.mixer.Sound('sound/ship_bump.wav')
         self.sound['recharge'] = pygame.mixer.Sound('sound/refuel.wav')
         self.sound['voice'] = pygame.mixer.Sound('sound/VoiceTextSound.wav')
+        self.sound['accel'] = pygame.mixer.Sound('sound/thrusters.wav')
 
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
