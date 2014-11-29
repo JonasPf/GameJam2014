@@ -65,24 +65,27 @@ class Character(pygame.sprite.Sprite):
         surface.blit(self.image, view_position)
 
     def draw_text(self, surface, view_x, view_y, font):
- # pygame.draw.rect()
 
         if self.text_time > 0:
             x = self.rect.x
             y = self.rect.y
             view_position = (x - view_x, y - view_y)
 
-            max_width = 0
+            width = 0
 
             for t in self.text:
-                size = pygame.font.Font.size(self.text)
-                max_width = max(size.w, max_width)
+                size = font.size(t)
+                width = max(size[0], width)
 
-            height = len(text) * 50
+            height = len(self.text) * 40
+
+            view_position = (view_position[0] - width / 2, view_position[1] - height - 50)
+
+            pygame.draw.rect(surface, (200,200,200), pygame.Rect(view_position[0], view_position[1], width, height))
 
             for ix, t in enumerate(self.text):
-                label = font.render(self.text, 1, (200,200,200))
-                view_position = (view_position[0], view_position[1] + (50 * ix))
+                label = font.render(t, 1, (0,0,0))
+                view_position = (view_position[0], view_position[1] + (40 * ix))
                 surface.blit(label, view_position)
 
     def update(self):
