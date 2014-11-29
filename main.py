@@ -20,6 +20,19 @@ FUEL_DECREMENT = 0.1
 
 TEXT_TIME = 20
 
+class Space(pygame.sprite.Sprite):
+
+    def __init__(self, location, picture):
+        super(Space, self).__init__()
+        self.image = picture
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+
+    def draw(self, surface, view_x, view_y):
+        x = self.rect.x
+        y = self.rect.y
+        view_position = (x - view_x, y - view_y)
+        surface.blit(self.image, view_position)
+
 class Asteroid(pygame.sprite.Sprite):
 
     def __init__(self, location, picture):
@@ -190,8 +203,6 @@ class Player(pygame.sprite.Sprite):
 
                 s.text_time = TEXT_TIME
 
-
-
 class Game(object):
 
     def __init__(self):
@@ -211,6 +222,19 @@ class Game(object):
         pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
 
         self.player = Player((5,5))
+
+        self.background = []
+
+        self.pictures = {}
+        self.pictures['space'] = pygame.image.load('gfx/space.png')
+
+        space_rect = self.pictures['space'].get_rect()
+        for x in range(-10, 10):
+            for y in range(-10, 10):
+                sx = x * space_rect.w
+                sy = y * space_rect.h
+
+                self.background.append(Space((sx, sy), self.pictures['space']))
 
         self.stuff = []
         self.stuff.append(Asteroid((-50,5), 'gfx/asteroid.png'))
@@ -259,6 +283,9 @@ class Game(object):
 
             screen.fill((200, 200, 200))
 
+            for s in self.background:
+                s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
+
             if self.debug:
                 for s in self.recharge:
                     s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
@@ -274,7 +301,7 @@ class Game(object):
             label = myfont.render("Fuel: {}".format(self.player.fuel), 1, self.fuel_colour())
             screen.blit(label, (10, 10))
 
-            label = myfont.render("Coordinates: {}/{}".format(self.player.rect.x, self.player.rect.y), 1, (0,0,0))
+            label = myfont.render("Coordinates: {}/{}".format(self.player.rect.x, self.player.rect.y), 1, (90,90,90))
             screen.blit(label, (10, 40))
 
             for s in self.character:
@@ -325,7 +352,8 @@ class GameOver(object):
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((800,600))
+    screen = pygame.display.set_mode((800, 600))
+    # screen = pygame.display.set_mode((1366,768))
 
     quit = False
     while not quit:
