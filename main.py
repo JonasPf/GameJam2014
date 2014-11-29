@@ -5,15 +5,11 @@ from math import atan2, degrees, pi
 MAX_SPEED = 10
 SPEED_INCREMENT = 0.5
 SPEED_DECREMENT = 0.5
+BUMP_SPEED = 15
+BUMP_SPEED_DECREMENT = 1
+START_FUEL = 99
+BUMP_DAMAGE = 10
 
-def angle(pos, origin):
-    dx = pos[0] - origin[0]
-    dy = pos[1] - origin[1]
-    rads = atan2(-dy,dx)
-    rads %= 2*pi
-    degs = degrees(rads)
-
-    return degs
 
 class Asteroid(pygame.sprite.Sprite):
 
@@ -49,13 +45,12 @@ class Player(pygame.sprite.Sprite):
 
         self.rect = pygame.rect.Rect(location, self.image.get_size())
 
-        self.fuel = 99
+        self.fuel = START_FUEL
         self.speed = 0.0
+        self.bump = False
 
-        self.direction_x = 0
-        self.direction_y = 0
-
-        self.direction_deg = 0
+        self.dx = 0
+        self.dy = 0
 
     def draw(self, surface, view_x, view_y):
         r = surface.get_rect()
@@ -68,34 +63,62 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, (pos_x, pos_y))
 
     def update(self, dt, game):
-        key = pygame.key.get_pressed()
+        if self.bump:
+            # if bump -> reduce speed quickly
 
-        mouse_x, mouse_y = pygame.mouse.get_pos()
+            self.rect.x += self.dx * self.speed;
+            self.rect.y += self.dy * self.speed;
 
-        screen_rect = screen.get_rect()
-        half_screen_w = screen_rect.w / 2
-        half_screen_h = screen_rect.h / 2
+            self.speed -= BUMP_SPEED_DECREMENT
 
-        if key[pygame.K_UP]:
-            self.speed += SPEED_INCREMENT
+            if self.speed <= 0:
+                self.speed = 0
+                self.bump = False
         else:
-            self.speed -= SPEED_DECREMENT
+            key = pygame.key.get_pressed()
 
-        if self.speed < 0:
-            self.speed = 0
-        if self.speed > MAX_SPEED:
-            self.speed = MAX_SPEED
+            mouse_x, mouse_y = pygame.mouse.get_pos()
 
-        dx = mouse_x - half_screen_w
-        dy = mouse_y - half_screen_h
+            screen_rect = screen.get_rect()
+            half_screen_w = screen_rect.w / 2
+            half_screen_h = screen_rect.h / 2
 
-        # normalize
-        sq = math.sqrt(dx ** 2 + dy ** 2)
-        dx = dx / sq
-        dy = dy / sq
+            self.dx = mouse_x - half_screen_w
+            self.dy = mouse_y - half_screen_h
 
-        self.rect.x += dx * self.speed;
-        self.rect.y += dy * self.speed;
+            # normalize
+            sq = math.sqrt(self.dx ** 2 + self.dy ** 2)
+            self.dx = self.dx / sq
+            self.dy = self.dy / sq
+
+            if key[pygame.K_UP]:
+                self.speed += SPEED_INCREMENT
+            else:
+                self.speed -= SPEED_DECREMENT
+
+            if self.speed < 0:
+                self.speed = 0
+            if self.speed > MAX_SPEED:
+                self.speed = MAX_SPEED
+
+            self.rect.x += self.dx * self.speed;
+            self.rect.y += self.dy * self.speed;
+
+        #####################################
+        # collision
+
+        for s in game.stuff:
+            if pygame.sprite.collide_rect(s, self):
+                self.bump = True
+                self.speed = BUMP_SPEED
+                # reverse direction
+                self.dx = self.dx * -1
+                self.dy = self.dy * -1
+
+                self.fuel -= BUMP_DAMAGE
+
+                print "FUEL: {}".format(self.fuel)
+
 
 class Game(object):
 
@@ -107,9 +130,9 @@ class Game(object):
 
         player = Player((5,5))
 
-        stuff = []
-        stuff.append(Asteroid((5,5), 'gfx/asteroid.png'))
-        stuff.append(Asteroid((300, 300), 'gfx/planet.png'))
+        self.stuff = []
+        self.stuff.append(Asteroid((-50,5), 'gfx/asteroid.png'))
+        self.stuff.append(Asteroid((300, 300), 'gfx/planet.png'))
 
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
@@ -130,7 +153,7 @@ class Game(object):
 
             screen.fill((200, 200, 200))
 
-            for s in stuff:
+            for s in self.stuff:
                 s.draw(screen, player.rect.x - half_screen_w, player.rect.y - half_screen_h)
             player.draw(screen, 0, 0)
 
