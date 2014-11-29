@@ -384,6 +384,10 @@ class GameStart(object):
         myfont = pygame.font.Font("font.ttf", 30)
         myfont.set_bold(True)
 
+        smallfont = pygame.font.Font("font.ttf", 15)
+        smallfont.set_bold(True)
+
+
         cover = pygame.image.load('gfx/Cover.png')
 
         while 1:
@@ -400,19 +404,22 @@ class GameStart(object):
 
             screen.fill((0, 0, 0))
 
-            label = myfont.render("Name of the game", 1, (200,200,200))
-            screen.blit(label, (10, 100))
-
             screen.blit(cover, (200, 100))
 
-            label = myfont.render("Find the ??? planet", 1, (200,200,200))
+            label = myfont.render("Search for Elysium", 1, (200,200,200))
+            screen.blit(label, (10, 100))
+
+            label = smallfont.render("Find the hidden planet Elysium!", 1, (200,200,200))
+            screen.blit(label, (10, 420))
+
+            label = smallfont.render("Watch your fuel tank! Refuel with water.", 1, (200,200,200))
             screen.blit(label, (10, 450))
 
-            label = myfont.render("Watch your fuel tank! Refuel with water.", 1, (200,200,200))
+            label = smallfont.render("Talk to the aliens to get hints, but sometimes they are wrong and", 1, (200,200,200))
             screen.blit(label, (10, 480))
 
-            label = myfont.render("Talk to the aliens to get hints ... but don't trust all of them", 1, (200,200,200))
-            screen.blit(label, (10, 510))
+            label = smallfont.render("coordinates are always a bit off. Go to the middle points.", 1, (200,200,200))
+            screen.blit(label, (10, 495))
 
             label = myfont.render("Press a key to start", 1, (200,200,200))
             screen.blit(label, (10, 540))
