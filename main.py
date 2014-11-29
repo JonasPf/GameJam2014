@@ -176,8 +176,10 @@ class Player(pygame.sprite.Sprite):
             if key[pygame.K_UP]:
                 self.speed += SPEED_INCREMENT
 
-                if game.sound['accel'].get_num_channels() == 0:
-                    game.sound['accel'].play()
+                accel = pygame.mixer.Channel(5)
+
+                if accel.get_busy() == 0:
+                    accel.play(game.sound['accel'])
             else:
                 self.speed -= SPEED_DECREMENT
                 game.sound['accel'].stop()
