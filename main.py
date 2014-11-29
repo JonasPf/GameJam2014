@@ -72,7 +72,7 @@ class Character(pygame.sprite.Sprite):
             y = self.rect.y
             view_position = (x - view_x, y - view_y)
 
-            screen.blit(label, view_position)
+            surface.blit(label, view_position)
 
     def update(self):
         if self.text_time > 0:
@@ -176,7 +176,8 @@ class Player(pygame.sprite.Sprite):
             if key[pygame.K_UP]:
                 self.speed += SPEED_INCREMENT
 
-                game.sound['accel'].play()
+                if game.sound['accel'].get_num_channels() == 0:
+                    game.sound['accel'].play()
             else:
                 self.speed -= SPEED_DECREMENT
                 game.sound['accel'].stop()
@@ -205,6 +206,7 @@ class Player(pygame.sprite.Sprite):
 
                 self.fuel -= BUMP_DAMAGE
 
+                print "BUM"
                 game.sound['bump'].play()
 
         for s in game.recharge:
@@ -239,7 +241,7 @@ class Game(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
+        # pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
 
         self.player = Player((5,5))
 
