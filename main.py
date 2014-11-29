@@ -13,6 +13,10 @@ BUMP_DAMAGE = 10
 FUEL_HIGH = 70
 FUEL_MEDIUM = 40
 
+MAX_FUEL = START_FUEL
+
+FUEL_INCREMENT = 1
+
 class Asteroid(pygame.sprite.Sprite):
 
     def __init__(self, location, picture):
@@ -25,6 +29,20 @@ class Asteroid(pygame.sprite.Sprite):
         y = self.rect.y
         view_position = (x - view_x, y - view_y)
         surface.blit(self.image, view_position)
+
+class Recharge(pygame.sprite.Sprite):
+
+    def __init__(self, location):
+        super(Recharge, self).__init__()
+        self.image = pygame.image.load('gfx/recharge.png')
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+
+    def draw(self, surface, view_x, view_y):
+        x = self.rect.x
+        y = self.rect.y
+        view_position = (x - view_x, y - view_y)
+        surface.blit(self.image, view_position)
+
 
 class Planet(pygame.sprite.Sprite):
 
@@ -119,6 +137,13 @@ class Player(pygame.sprite.Sprite):
 
                 self.fuel -= BUMP_DAMAGE
 
+        for s in game.recharge:
+            if pygame.sprite.collide_rect(s, self):
+                self.fuel += FUEL_INCREMENT
+
+                if self.fuel > START_FUEL:
+                    self.fuel = START_FUEL
+
 class Game(object):
 
     def __init__(self):
@@ -141,12 +166,18 @@ class Game(object):
         self.stuff.append(Asteroid((-50,5), 'gfx/asteroid.png'))
         self.stuff.append(Asteroid((300, 300), 'gfx/planet.png'))
 
+        self.recharge = []
+        self.recharge.append(Recharge((270, 300)))
+        self.recharge.append(Recharge((270, 400)))
+
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
         half_screen_h = screen_rect.h / 2
 
         myfont = pygame.font.SysFont("monospace", 20)
         myfont.set_bold(True)
+
+        self.debug = False
 
         while 1:
             dt = clock.tick(30)
@@ -157,12 +188,18 @@ class Game(object):
                 if event.type == pygame.KEYDOWN and \
                         event.key == pygame.K_ESCAPE:
                     return True
+                if event.type == pygame.KEYUP and \
+                        event.key == pygame.K_d:
+                    self.debug = not self.debug
 
 
             self.player.update(dt, self)
 
-
             screen.fill((200, 200, 200))
+
+            if self.debug:
+                for s in self.recharge:
+                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
             for s in self.stuff:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
