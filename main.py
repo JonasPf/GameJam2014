@@ -16,6 +16,7 @@ FUEL_MEDIUM = 40
 MAX_FUEL = START_FUEL
 
 FUEL_INCREMENT = 1
+FUEL_DECREMENT = 0.1
 
 class Asteroid(pygame.sprite.Sprite):
 
@@ -121,6 +122,9 @@ class Player(pygame.sprite.Sprite):
             if self.speed > MAX_SPEED:
                 self.speed = MAX_SPEED
 
+            if self.speed > 0:
+                self.fuel -= FUEL_DECREMENT
+
             self.rect.x += self.dx * self.speed;
             self.rect.y += self.dy * self.speed;
 
@@ -137,12 +141,17 @@ class Player(pygame.sprite.Sprite):
 
                 self.fuel -= BUMP_DAMAGE
 
+                game.sound['bump'].play()
+
         for s in game.recharge:
             if pygame.sprite.collide_rect(s, self):
                 self.fuel += FUEL_INCREMENT
 
                 if self.fuel > START_FUEL:
                     self.fuel = START_FUEL
+
+                game.sound['recharge'].play()
+
 
 class Game(object):
 
@@ -160,6 +169,8 @@ class Game(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
+        pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
+
         self.player = Player((5,5))
 
         self.stuff = []
@@ -169,6 +180,10 @@ class Game(object):
         self.recharge = []
         self.recharge.append(Recharge((270, 300)))
         self.recharge.append(Recharge((270, 400)))
+
+        self.sound = {}
+        self.sound['bump'] = pygame.mixer.Sound('sound/ship_destroy.wav')
+        self.sound['recharge'] = pygame.mixer.Sound('sound/refuel.wav')
 
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
