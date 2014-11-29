@@ -10,6 +10,8 @@ BUMP_SPEED_DECREMENT = 1
 START_FUEL = 99
 BUMP_DAMAGE = 10
 
+FUEL_HIGH = 70
+FUEL_MEDIUM = 40
 
 class Asteroid(pygame.sprite.Sprite):
 
@@ -117,18 +119,23 @@ class Player(pygame.sprite.Sprite):
 
                 self.fuel -= BUMP_DAMAGE
 
-                print "FUEL: {}".format(self.fuel)
-
-
 class Game(object):
 
     def __init__(self):
         print "Initializing"
 
+    def fuel_colour(self):
+        if self.player.fuel > FUEL_HIGH:
+            return (0,255,0)
+        elif self.player.fuel > FUEL_MEDIUM:
+            return (255,255,0)
+        else:
+            return (255,0,0)
+
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        player = Player((5,5))
+        self.player = Player((5,5))
 
         self.stuff = []
         self.stuff.append(Asteroid((-50,5), 'gfx/asteroid.png'))
@@ -138,30 +145,85 @@ class Game(object):
         half_screen_w = screen_rect.w / 2
         half_screen_h = screen_rect.h / 2
 
+        myfont = pygame.font.SysFont("monospace", 20)
+        myfont.set_bold(True)
+
         while 1:
             dt = clock.tick(30)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return
+                    return True
                 if event.type == pygame.KEYDOWN and \
                         event.key == pygame.K_ESCAPE:
-                    return
+                    return True
 
 
-            player.update(dt, self)
+            self.player.update(dt, self)
+
 
             screen.fill((200, 200, 200))
 
             for s in self.stuff:
-                s.draw(screen, player.rect.x - half_screen_w, player.rect.y - half_screen_h)
-            player.draw(screen, 0, 0)
+                s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
+            self.player.draw(screen, 0, 0)
+
+            label = myfont.render("Fuel: {}".format(self.player.fuel), 1, self.fuel_colour())
+            screen.blit(label, (10, 10))
+
+            label = myfont.render("Coordinates: {}/{}".format(self.player.rect.x, self.player.rect.y), 1, (0,0,0))
+            screen.blit(label, (10, 40))
 
             pygame.display.flip()
 
+            if self.player.fuel <= 0:
+                break;
 
+        return False
+
+
+class GameOver(object):
+
+    def main(self, screen):
+        clock = pygame.time.Clock()
+
+        myfont = pygame.font.SysFont("monospace", 40)
+        myfont.set_bold(True)
+
+        while 1:
+            dt = clock.tick(30)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return True
+                if event.type == pygame.KEYDOWN and \
+                        event.key == pygame.K_ESCAPE:
+                    return True
+                if event.type == pygame.KEYDOWN and \
+                        event.key == pygame.K_r:
+                    return False
+
+            screen.fill((200, 200, 200))
+
+            label = myfont.render("Game Over", 1, (0,0,0))
+            screen.blit(label, (10, 100))
+
+            label = myfont.render("Score: {}".format("???"), 1, (0,0,0))
+            screen.blit(label, (10, 150))
+
+
+            label = myfont.render("Press 'R' to restart", 1, (0,0,0))
+            screen.blit(label, (10, 200))
+
+            pygame.display.flip()
 
 if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((800,600))
-    Game().main(screen)
+
+    quit = False
+    while not quit:
+        quit = Game().main(screen)
+    
+        if not quit:
+            quit = GameOver().main(screen)
