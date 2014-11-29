@@ -38,9 +38,10 @@ class Space(pygame.sprite.Sprite):
 
 class Obstacle(pygame.sprite.Sprite):
 
-    def __init__(self, location, picture):
+    def __init__(self, location, picture, deadly=False):
         super(Obstacle, self).__init__()
         self.image = picture
+        self.deadly = deadly
         self.rect = pygame.rect.Rect(location, self.image.get_size())
 
     def draw(self, surface, view_x, view_y):
@@ -197,9 +198,14 @@ class Player(pygame.sprite.Sprite):
 
         #####################################
         # collision
+        #####################################
 
         for s in game.obstacles:
-            if pygame.sprite.collide_rect(s, self):
+            if pygame.sprite.collide_rect(s, self) and pygame.sprite.collide_mask(s, self):
+                if s.deadly:
+                    self.fuel = 0
+                    break
+
                 self.bump = True
                 self.speed = BUMP_SPEED
                 # reverse direction
@@ -208,7 +214,6 @@ class Player(pygame.sprite.Sprite):
 
                 self.fuel -= BUMP_DAMAGE
 
-                print "BUM"
                 game.sound['bump'].play()
 
         for s in game.recharge:
@@ -255,6 +260,7 @@ class Game(object):
         self.pictures['planet'] = pygame.image.load('gfx/planet.png')
         self.pictures['recharger'] = pygame.image.load('gfx/recharge.png')
         self.pictures['character'] = pygame.image.load('gfx/character.png')
+        self.pictures['red6'] = pygame.image.load('gfx/Red_6.png')
 
 
         space_rect = self.pictures['space'].get_rect()
@@ -274,6 +280,7 @@ class Game(object):
         self.sound['recharge'] = pygame.mixer.Sound('sound/refuel.wav')
         self.sound['voice'] = pygame.mixer.Sound('sound/VoiceTextSound.wav')
         self.sound['accel'] = pygame.mixer.Sound('sound/thrusters.wav')
+        self.sound['gameover'] = pygame.mixer.Sound('sound/PowerDown.wav')
 
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
@@ -332,6 +339,7 @@ class Game(object):
             pygame.display.flip()
 
             if self.player.fuel <= 0:
+                self.sound['gameover'].play()
                 break;
 
         return False
@@ -363,14 +371,55 @@ class GameOver(object):
             label = myfont.render("Game Over", 1, (0,0,0))
             screen.blit(label, (10, 100))
 
-            label = myfont.render("Score: {}".format("???"), 1, (0,0,0))
+            label = myfont.render("Press 'R' to restart", 1, (0,0,0))
             screen.blit(label, (10, 150))
 
+            pygame.display.flip()
 
-            label = myfont.render("Press 'R' to restart", 1, (0,0,0))
-            screen.blit(label, (10, 200))
+class GameStart(object):
+
+    def main(self, screen):
+        clock = pygame.time.Clock()
+
+        myfont = pygame.font.Font("font.ttf", 30)
+        myfont.set_bold(True)
+
+        cover = pygame.image.load('gfx/Cover.png')
+
+        while 1:
+            dt = clock.tick(30)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return True
+                if event.type == pygame.KEYDOWN and \
+                        event.key == pygame.K_ESCAPE:
+                    return True
+                if event.type == pygame.KEYDOWN:
+                    return False
+
+            screen.fill((0, 0, 0))
+
+            label = myfont.render("Name of the game", 1, (200,200,200))
+            screen.blit(label, (10, 100))
+
+            screen.blit(cover, (200, 100))
+
+            label = myfont.render("Find the ??? planet", 1, (200,200,200))
+            screen.blit(label, (10, 450))
+
+            label = myfont.render("Watch your fuel tank! Refuel with water.", 1, (200,200,200))
+            screen.blit(label, (10, 480))
+
+            label = myfont.render("Talk to the aliens to get hints ... but don't trust all of them", 1, (200,200,200))
+            screen.blit(label, (10, 510))
+
+            label = myfont.render("Press a key to start", 1, (200,200,200))
+            screen.blit(label, (10, 540))
 
             pygame.display.flip()
+
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -384,7 +433,10 @@ if __name__ == '__main__':
 
     quit = False
     while not quit:
-        quit = Game().main(screen)
+        quit = GameStart().main(screen)
+
+        if not quit:
+            quit = Game().main(screen)
     
         if not quit:
             quit = GameOver().main(screen)
