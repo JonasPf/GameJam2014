@@ -394,6 +394,9 @@ if __name__ == '__main__':
     pygame.init()
     screen = pygame.display.set_mode((800,600))
 
+    pygame.mouse.set_visible(False)
+    pygame.display.init()
+
     if len(sys.argv) > 1 and sys.argv[1] == '-fullscreen':   
         pygame.display.toggle_fullscreen()
 
