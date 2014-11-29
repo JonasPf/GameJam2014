@@ -63,7 +63,7 @@ class Character(pygame.sprite.Sprite):
 
     def draw_text(self, surface, view_x, view_y, font):
         if self.text_time > 0:
-            label = font.render(self.text, 1, (0,0,0))
+            label = font.render(self.text, 1, (200,200,200))
 
             x = self.rect.x
             y = self.rect.y
@@ -153,8 +153,9 @@ class Player(pygame.sprite.Sprite):
 
             # normalize
             sq = math.sqrt(self.dx ** 2 + self.dy ** 2)
-            self.dx = self.dx / sq
-            self.dy = self.dy / sq
+            if sq != 0:
+                self.dx = self.dx / sq
+                self.dy = self.dy / sq
 
             if key[pygame.K_UP]:
                 self.speed += SPEED_INCREMENT
@@ -352,8 +353,8 @@ class GameOver(object):
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((800, 600))
-    # screen = pygame.display.set_mode((1366,768))
+    screen = pygame.display.set_mode((1366,768))
+    pygame.display.toggle_fullscreen()
 
     quit = False
     while not quit:
