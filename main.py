@@ -1,3 +1,4 @@
+import sys
 import pygame
 import math
 from math import atan2, degrees, pi
@@ -19,6 +20,33 @@ FUEL_INCREMENT = 1
 FUEL_DECREMENT = 0.1
 
 TEXT_TIME = 20
+
+
+# some functions for vector math
+
+def magnitude(v):
+    return math.sqrt(sum(v[i]*v[i] for i in range(len(v))))
+
+def add(u, v):
+    return [(a+b) for (a, b) in zip(u, v)]
+
+def sub(u, v):
+    return [(a-b) for (a, b) in zip(u, v)]
+
+def dot(u, v):
+    return sum((a*b) for a, b in zip(u, v))
+
+def normalize(v):
+    vmag = magnitude(v)
+    return [ v[i]/vmag  for i in range(len(v)) ]
+
+def length(v):
+  return math.sqrt(dot(v, v))
+
+def angle(v1, v2):
+  return math.acos(dot(v1, v2) / (length(v1) * length(v2)))
+
+
 
 class Space(pygame.sprite.Sprite):
 
@@ -125,7 +153,20 @@ class Player(pygame.sprite.Sprite):
         pos_x = (screen_w / 2) - (self.image.get_rect().x / 2)
         pos_y = (screen_h / 2) - (self.image.get_rect().y / 2)
 
-        surface.blit(self.image, (pos_x, pos_y))
+        rads = atan2(self.dx, self.dy)
+        rads += pi
+        degs = degrees(rads)
+
+        rotated = pygame.transform.rotate(self.image, degs)
+
+        # need to offset it a little because rotation changes the size
+        orig_rect = self.image.get_rect()
+        rotated_rect = rotated.get_rect()
+
+        dw = (rotated_rect.w - orig_rect.w) / 2.0
+        dh = (rotated_rect.h - orig_rect.h) / 2.0
+
+        surface.blit(rotated, (pos_x - dw, pos_y - dh))
 
     def update(self, dt, game):
         if self.bump:
@@ -337,8 +378,6 @@ class GameOver(object):
                         event.key == pygame.K_r:
                     return False
 
-            screen.fill((200, 200, 200))
-
             label = myfont.render("Game Over", 1, (0,0,0))
             screen.blit(label, (10, 100))
 
@@ -353,8 +392,10 @@ class GameOver(object):
 
 if __name__ == '__main__':
     pygame.init()
-    screen = pygame.display.set_mode((1366,768))
-    pygame.display.toggle_fullscreen()
+    screen = pygame.display.set_mode((800,600))
+
+    if len(sys.argv) > 1 and sys.argv[1] == '-fullscreen':   
+        pygame.display.toggle_fullscreen()
 
     quit = False
     while not quit:
