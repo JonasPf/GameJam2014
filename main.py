@@ -18,6 +18,8 @@ MAX_FUEL = START_FUEL
 FUEL_INCREMENT = 1
 FUEL_DECREMENT = 0.1
 
+TEXT_TIME = 20
+
 class Asteroid(pygame.sprite.Sprite):
 
     def __init__(self, location, picture):
@@ -30,6 +32,35 @@ class Asteroid(pygame.sprite.Sprite):
         y = self.rect.y
         view_position = (x - view_x, y - view_y)
         surface.blit(self.image, view_position)
+
+class Character(pygame.sprite.Sprite):
+
+    def __init__(self, location, text):
+        super(Character, self).__init__()
+        self.image = pygame.image.load('gfx/character.png')
+        self.rect = pygame.rect.Rect(location, self.image.get_size())
+        self.text = text
+        self.text_time = 0
+
+    def draw(self, surface, view_x, view_y):
+        x = self.rect.x
+        y = self.rect.y
+        view_position = (x - view_x, y - view_y)
+        surface.blit(self.image, view_position)
+
+    def draw_text(self, surface, view_x, view_y, font):
+        if self.text_time > 0:
+            label = font.render(self.text, 1, (0,0,0))
+
+            x = self.rect.x
+            y = self.rect.y
+            view_position = (x - view_x, y - view_y)
+
+            screen.blit(label, view_position)
+
+    def update(self):
+        if self.text_time > 0:
+            self.text_time -= 1
 
 class Recharge(pygame.sprite.Sprite):
 
@@ -152,6 +183,12 @@ class Player(pygame.sprite.Sprite):
 
                 game.sound['recharge'].play()
 
+        for s in game.character:
+            if pygame.sprite.collide_rect(s, self):
+                s.text_time = TEXT_TIME
+
+                game.sound['voice'].play()
+
 
 class Game(object):
 
@@ -181,9 +218,14 @@ class Game(object):
         self.recharge.append(Recharge((270, 300)))
         self.recharge.append(Recharge((270, 400)))
 
+        self.character = []
+        self.character.append(Character((430, 300), "Hi there!"))
+        self.character.append(Character((430, 400), "Go to the green planet!"))
+
         self.sound = {}
         self.sound['bump'] = pygame.mixer.Sound('sound/ship_destroy.wav')
         self.sound['recharge'] = pygame.mixer.Sound('sound/refuel.wav')
+        self.sound['voice'] = pygame.mixer.Sound('sound/VoiceTextSound.wav')
 
         screen_rect = screen.get_rect()
         half_screen_w = screen_rect.w / 2
@@ -210,14 +252,24 @@ class Game(object):
 
             self.player.update(dt, self)
 
+            for s in self.character:
+                s.update()
+
             screen.fill((200, 200, 200))
 
             if self.debug:
                 for s in self.recharge:
                     s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
+                for s in self.character:
+                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
+
+            for s in self.character:
+                s.draw_text(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h, myfont)
+
             for s in self.stuff:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
+
             self.player.draw(screen, 0, 0)
 
             label = myfont.render("Fuel: {}".format(self.player.fuel), 1, self.fuel_colour())
