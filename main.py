@@ -174,7 +174,7 @@ class Player(pygame.sprite.Sprite):
                 self.dx = self.dx / sq
                 self.dy = self.dy / sq
 
-            if key[pygame.K_UP]:
+            if key[pygame.K_UP] or pygame.mouse.get_pressed()[0]:
                 self.speed += SPEED_INCREMENT
 
                 accel = pygame.mixer.Channel(5)
