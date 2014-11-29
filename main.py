@@ -4,12 +4,13 @@ import math
 from math import atan2, degrees, pi
 import level
 
-MAX_SPEED = 10
+MAX_SPEED = 30
+# MAX_SPEED = 10
 SPEED_INCREMENT = 0.5
 SPEED_DECREMENT = 0.5
 BUMP_SPEED = 15
 BUMP_SPEED_DECREMENT = 1
-START_FUEL = 99
+START_FUEL = 9999999999999
 BUMP_DAMAGE = 10
 
 FUEL_HIGH = 70
@@ -21,6 +22,9 @@ FUEL_INCREMENT = 1
 FUEL_DECREMENT = 0.1
 
 TEXT_TIME = 20
+
+START_X = 400
+START_Y = 400
 
 
 class Space(pygame.sprite.Sprite):
@@ -42,6 +46,10 @@ class Obstacle(pygame.sprite.Sprite):
         super(Obstacle, self).__init__()
         self.image = picture
         self.deadly = deadly
+
+        rect = picture.get_rect()
+        location = (location[0] - (rect.w / 2), location[1] - (rect.h / 2))
+
         self.rect = pygame.rect.Rect(location, self.image.get_size())
 
     def draw(self, surface, view_x, view_y):
@@ -250,7 +258,7 @@ class Game(object):
 
         # pygame.mixer.init(frequency=22050, size=-16, channels=2, buffer=4096)
 
-        self.player = Player((5,5))
+        self.player = Player((START_X,START_Y))
 
         self.background = []
 
@@ -260,7 +268,16 @@ class Game(object):
         self.pictures['planet'] = pygame.image.load('gfx/planet.png')
         self.pictures['recharger'] = pygame.image.load('gfx/recharge.png')
         self.pictures['character'] = pygame.image.load('gfx/character.png')
-        self.pictures['red6'] = pygame.image.load('gfx/Red_6.png')
+        self.pictures['bigwhite8'] = pygame.image.load('gfx/Big_White_8.png')
+        self.pictures['mediumred6'] = pygame.image.load('gfx/Medium_Red_6_Large.png')
+        self.pictures['smallgreen6'] = pygame.image.load('gfx/Small_Green_6.png')
+        self.pictures['bigblue3'] = pygame.image.load('gfx/Big_Blue_3.png')
+        self.pictures['smallgold3'] = pygame.image.load('gfx/Small_Gold_3.png')
+        self.pictures['mediumblue2'] = pygame.image.load('gfx/Medium_Blue_NoWater_2.png')
+        self.pictures['smallred2'] = pygame.image.load('gfx/Small_Red_2.png')
+        self.pictures['mediumwhite2'] = pygame.image.load('gfx/Medium_White_2.png')
+        self.pictures['elysium'] = pygame.image.load('gfx/Elysium.png')
+        self.pictures['sun'] = pygame.image.load('gfx/Sun.png')
 
 
         space_rect = self.pictures['space'].get_rect()
@@ -409,7 +426,7 @@ class GameStart(object):
             label = myfont.render("Search for Elysium", 1, (200,200,200))
             screen.blit(label, (10, 100))
 
-            label = smallfont.render("Find the hidden planet Elysium!", 1, (200,200,200))
+            label = smallfont.render("Find the hidden world of Elysium!", 1, (200,200,200))
             screen.blit(label, (10, 420))
 
             label = smallfont.render("Watch your fuel tank! Refuel with water.", 1, (200,200,200))
