@@ -2,6 +2,7 @@ import sys
 import pygame
 import math
 from math import atan2, degrees, pi
+import level
 
 MAX_SPEED = 10
 SPEED_INCREMENT = 0.5
@@ -35,11 +36,11 @@ class Space(pygame.sprite.Sprite):
         view_position = (x - view_x, y - view_y)
         surface.blit(self.image, view_position)
 
-class Asteroid(pygame.sprite.Sprite):
+class Obstacle(pygame.sprite.Sprite):
 
     def __init__(self, location, picture):
-        super(Asteroid, self).__init__()
-        self.image = pygame.image.load(picture)
+        super(Obstacle, self).__init__()
+        self.image = picture
         self.rect = pygame.rect.Rect(location, self.image.get_size())
 
     def draw(self, surface, view_x, view_y):
@@ -50,9 +51,9 @@ class Asteroid(pygame.sprite.Sprite):
 
 class Character(pygame.sprite.Sprite):
 
-    def __init__(self, location, text):
+    def __init__(self, location, picture, text):
         super(Character, self).__init__()
-        self.image = pygame.image.load('gfx/character.png')
+        self.image = picture
         self.rect = pygame.rect.Rect(location, self.image.get_size())
         self.text = text
         self.text_time = 0
@@ -79,23 +80,9 @@ class Character(pygame.sprite.Sprite):
 
 class Recharge(pygame.sprite.Sprite):
 
-    def __init__(self, location):
-        super(Recharge, self).__init__()
-        self.image = pygame.image.load('gfx/recharge.png')
-        self.rect = pygame.rect.Rect(location, self.image.get_size())
-
-    def draw(self, surface, view_x, view_y):
-        x = self.rect.x
-        y = self.rect.y
-        view_position = (x - view_x, y - view_y)
-        surface.blit(self.image, view_position)
-
-
-class Planet(pygame.sprite.Sprite):
-
     def __init__(self, location, picture):
-        super(Planet, self).__init__()
-        self.image = pygame.image.load(picture)
+        super(Recharge, self).__init__()
+        self.image = picture
         self.rect = pygame.rect.Rect(location, self.image.get_size())
 
     def draw(self, surface, view_x, view_y):
@@ -103,6 +90,20 @@ class Planet(pygame.sprite.Sprite):
         y = self.rect.y
         view_position = (x - view_x, y - view_y)
         surface.blit(self.image, view_position)
+
+
+# class Planet(pygame.sprite.Sprite):
+
+#     def __init__(self, location, picture):
+#         super(Planet, self).__init__()
+#         self.image = pygame.image.load(picture)
+#         self.rect = pygame.rect.Rect(location, self.image.get_size())
+
+#     def draw(self, surface, view_x, view_y):
+#         x = self.rect.x
+#         y = self.rect.y
+#         view_position = (x - view_x, y - view_y)
+#         surface.blit(self.image, view_position)
 
 class Player(pygame.sprite.Sprite):
 
@@ -194,7 +195,7 @@ class Player(pygame.sprite.Sprite):
         #####################################
         # collision
 
-        for s in game.stuff:
+        for s in game.obstacles:
             if pygame.sprite.collide_rect(s, self):
                 self.bump = True
                 self.speed = BUMP_SPEED
@@ -246,6 +247,11 @@ class Game(object):
 
         self.pictures = {}
         self.pictures['space'] = pygame.image.load('gfx/space.png')
+        self.pictures['asteroid'] = pygame.image.load('gfx/asteroid.png')
+        self.pictures['planet'] = pygame.image.load('gfx/planet.png')
+        self.pictures['recharger'] = pygame.image.load('gfx/recharge.png')
+        self.pictures['character'] = pygame.image.load('gfx/character.png')
+
 
         space_rect = self.pictures['space'].get_rect()
         for x in range(-10, 10):
@@ -255,17 +261,9 @@ class Game(object):
 
                 self.background.append(Space((sx, sy), self.pictures['space']))
 
-        self.stuff = []
-        self.stuff.append(Asteroid((-50,5), 'gfx/asteroid.png'))
-        self.stuff.append(Asteroid((300, 300), 'gfx/planet.png'))
-
-        self.recharge = []
-        self.recharge.append(Recharge((270, 300)))
-        self.recharge.append(Recharge((270, 400)))
-
-        self.character = []
-        self.character.append(Character((430, 300), "Hi there!"))
-        self.character.append(Character((430, 400), "Go to the green planet!"))
+        self.obstacles = level.create_obstacles(self.pictures)
+        self.character = level.create_characters(self.pictures)
+        self.recharge = level.create_rechargers(self.pictures)
 
         self.sound = {}
         self.sound['bump'] = pygame.mixer.Sound('sound/ship_bump.wav')
@@ -313,7 +311,7 @@ class Game(object):
                 for s in self.character:
                     s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
-            for s in self.stuff:
+            for s in self.obstacles:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
             self.player.draw(screen, 0, 0)
