@@ -65,14 +65,25 @@ class Character(pygame.sprite.Sprite):
         surface.blit(self.image, view_position)
 
     def draw_text(self, surface, view_x, view_y, font):
-        if self.text_time > 0:
-            label = font.render(self.text, 1, (200,200,200))
+ # pygame.draw.rect()
 
+        if self.text_time > 0:
             x = self.rect.x
             y = self.rect.y
             view_position = (x - view_x, y - view_y)
 
-            surface.blit(label, view_position)
+            max_width = 0
+
+            for t in self.text:
+                size = pygame.font.Font.size(self.text)
+                max_width = max(size.w, max_width)
+
+            height = len(text) * 50
+
+            for ix, t in enumerate(self.text):
+                label = font.render(self.text, 1, (200,200,200))
+                view_position = (view_position[0], view_position[1] + (50 * ix))
+                surface.blit(label, view_position)
 
     def update(self):
         if self.text_time > 0:
@@ -90,20 +101,6 @@ class Recharge(pygame.sprite.Sprite):
         y = self.rect.y
         view_position = (x - view_x, y - view_y)
         surface.blit(self.image, view_position)
-
-
-# class Planet(pygame.sprite.Sprite):
-
-#     def __init__(self, location, picture):
-#         super(Planet, self).__init__()
-#         self.image = pygame.image.load(picture)
-#         self.rect = pygame.rect.Rect(location, self.image.get_size())
-
-#     def draw(self, surface, view_x, view_y):
-#         x = self.rect.x
-#         y = self.rect.y
-#         view_position = (x - view_x, y - view_y)
-#         surface.blit(self.image, view_position)
 
 class Player(pygame.sprite.Sprite):
 
@@ -279,7 +276,7 @@ class Game(object):
         half_screen_w = screen_rect.w / 2
         half_screen_h = screen_rect.h / 2
 
-        myfont = pygame.font.SysFont("monospace", 20)
+        myfont = pygame.font.Font("font.ttf", 30)
         myfont.set_bold(True)
 
         self.debug = False
@@ -320,10 +317,10 @@ class Game(object):
 
             self.player.draw(screen, 0, 0)
 
-            label = myfont.render("Fuel: {}".format(self.player.fuel), 1, self.fuel_colour())
+            label = myfont.render("Fuel: {}".format(int(self.player.fuel)), 1, self.fuel_colour())
             screen.blit(label, (10, 10))
 
-            label = myfont.render("Coordinates: {}/{}".format(self.player.rect.x, self.player.rect.y), 1, (90,90,90))
+            label = myfont.render("Coordinates: {}/{}".format(int(self.player.rect.x / 100), int(self.player.rect.y / 100)), 1, (90,90,90))
             screen.blit(label, (10, 40))
 
             for s in self.character:
@@ -342,7 +339,7 @@ class GameOver(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        myfont = pygame.font.SysFont("monospace", 40)
+        myfont = pygame.font.Font("font.ttf", 30)
         myfont.set_bold(True)
 
         while 1:
@@ -357,6 +354,8 @@ class GameOver(object):
                 if event.type == pygame.KEYDOWN and \
                         event.key == pygame.K_r:
                     return False
+
+            screen.fill((200, 200, 200))
 
             label = myfont.render("Game Over", 1, (0,0,0))
             screen.blit(label, (10, 100))
