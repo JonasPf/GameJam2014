@@ -185,9 +185,11 @@ class Player(pygame.sprite.Sprite):
 
         for s in game.character:
             if pygame.sprite.collide_rect(s, self):
+                if s.text_time <= 0:
+                    game.sound['voice'].play()
+
                 s.text_time = TEXT_TIME
 
-                game.sound['voice'].play()
 
 
 class Game(object):
@@ -264,9 +266,6 @@ class Game(object):
                 for s in self.character:
                     s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
-            for s in self.character:
-                s.draw_text(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h, myfont)
-
             for s in self.stuff:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
@@ -277,6 +276,9 @@ class Game(object):
 
             label = myfont.render("Coordinates: {}/{}".format(self.player.rect.x, self.player.rect.y), 1, (0,0,0))
             screen.blit(label, (10, 40))
+
+            for s in self.character:
+                s.draw_text(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h, myfont)
 
             pygame.display.flip()
 
