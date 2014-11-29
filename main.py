@@ -1,9 +1,10 @@
 import pygame
+import math
 from math import atan2, degrees, pi
 
-MAX_SPEED = 0.08
-SPEED_INCREMENT = 0.0015
-SPEED_DECREMENT = 0.0015
+MAX_SPEED = 10
+SPEED_INCREMENT = 0.5
+SPEED_DECREMENT = 0.5
 
 def angle(pos, origin):
     dx = pos[0] - origin[0]
@@ -69,6 +70,12 @@ class Player(pygame.sprite.Sprite):
     def update(self, dt, game):
         key = pygame.key.get_pressed()
 
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+
+        screen_rect = screen.get_rect()
+        half_screen_w = screen_rect.w / 2
+        half_screen_h = screen_rect.h / 2
+
         if key[pygame.K_UP]:
             self.speed += SPEED_INCREMENT
         else:
@@ -79,63 +86,16 @@ class Player(pygame.sprite.Sprite):
         if self.speed > MAX_SPEED:
             self.speed = MAX_SPEED
 
-
-        
-
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        player_center_x = self.rect.x + (self.rect.w / 2)
-        player_center_y = self.rect.y + (self.rect.h / 2)
-
-        screen_rect = screen.get_rect()
-        half_screen_w = screen_rect.w / 2
-        half_screen_h = screen_rect.h / 2
-
-        self.direction_deg = angle((mouse_x, mouse_y), (half_screen_w, half_screen_h))        
-
-
-        print self.direction_deg
-
-        if mouse_x > half_screen_w:
-            self.direction_x = 1
-
-        if mouse_x < half_screen_w:
-            self.direction_x = -1
-
-        if mouse_y > half_screen_h:
-            self.direction_y = 1
-
-        if mouse_y < half_screen_h:
-            self.direction_y = -1
-
-
-
-        # if mouse_x < self.rect.x or mouse_x > self.rect.x + self.rect.w:
-        #     if mouse_x > player_center_x:
-        #         self.direction_x = 1
-        #     elif mouse_x < player_center_x:
-        #         self.direction_x = -1
-
-        # if mouse_y < self.rect.y or mouse_y > self.rect.y + self.rect.h:
-        #     if mouse_y > player_center_y:
-        #         self.direction_y = 1
-        #     elif mouse_y < player_center_y:
-        #         self.direction_y = -1
-
-        # v1 = ( half_screen_w, half_screen_h );
-        # v2 = ( mouse_x, mouse_y );
-        # dir = v2 - v1;
         dx = mouse_x - half_screen_w
-        # dx.normalize()
         dy = mouse_y - half_screen_h
-        # dy.normalize()
 
+        # normalize
+        sq = math.sqrt(dx ** 2 + dy ** 2)
+        dx = dx / sq
+        dy = dy / sq
 
-        # dir.normalize();
         self.rect.x += dx * self.speed;
         self.rect.y += dy * self.speed;
-
-        # self.rect.x += self.speed * dt * self.direction_x
-        # self.rect.y += self.speed * dt * self.direction_y
 
 class Game(object):
 
