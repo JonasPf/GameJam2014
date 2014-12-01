@@ -10,21 +10,23 @@ SPEED_INCREMENT = 0.5
 SPEED_DECREMENT = 0.5
 BUMP_SPEED = 15
 BUMP_SPEED_DECREMENT = 1
-START_FUEL = 9999999999999
+START_FUEL = 50
 BUMP_DAMAGE = 10
 
 FUEL_HIGH = 70
 FUEL_MEDIUM = 40
 
-MAX_FUEL = START_FUEL
+MAX_FUEL = 400
 
 FUEL_INCREMENT = 1
 FUEL_DECREMENT = 0.1
 
 TEXT_TIME = 20
 
-START_X = 400
-START_Y = 400
+# START_X = -10000
+# START_Y = -2000
+START_X = -800
+START_Y = -400
 
 
 class Space(pygame.sprite.Sprite):
@@ -86,15 +88,15 @@ class Character(pygame.sprite.Sprite):
                 size = font.size(t)
                 width = max(size[0], width)
 
-            height = len(self.text) * 40
+            height = len(self.text) * 20
 
-            view_position = (view_position[0] - width / 2, view_position[1] - height - 50)
+            view_position = (view_position[0], view_position[1] - (height / 2) + 100)
 
             pygame.draw.rect(surface, (200,200,200), pygame.Rect(view_position[0], view_position[1], width, height))
 
             for ix, t in enumerate(self.text):
                 label = font.render(t, 1, (0,0,0))
-                view_position = (view_position[0], view_position[1] + (40 * ix))
+                view_position = (view_position[0], view_position[1] + (20 * ix))
                 surface.blit(label, view_position)
 
     def update(self):
@@ -228,8 +230,8 @@ class Player(pygame.sprite.Sprite):
             if pygame.sprite.collide_rect(s, self):
                 self.fuel += FUEL_INCREMENT
 
-                if self.fuel > START_FUEL:
-                    self.fuel = START_FUEL
+                if self.fuel > MAX_FUEL:
+                    self.fuel = MAX_FUEL
 
                 game.sound['recharge'].play()
 
@@ -267,7 +269,10 @@ class Game(object):
         self.pictures['asteroid'] = pygame.image.load('gfx/asteroid.png')
         self.pictures['planet'] = pygame.image.load('gfx/planet.png')
         self.pictures['recharger'] = pygame.image.load('gfx/recharge.png')
+        self.pictures['recharger_big'] = pygame.image.load('gfx/recharge_big.png')
         self.pictures['character'] = pygame.image.load('gfx/character.png')
+        self.pictures['character_small'] = pygame.image.load('gfx/character_small.png')
+        self.pictures['character_medium'] = pygame.image.load('gfx/character_medium.png')
         self.pictures['bigwhite8'] = pygame.image.load('gfx/Big_White_8.png')
         self.pictures['mediumred6'] = pygame.image.load('gfx/Medium_Red_6_Large.png')
         self.pictures['smallgreen6'] = pygame.image.load('gfx/Small_Green_6.png')
@@ -278,6 +283,11 @@ class Game(object):
         self.pictures['mediumwhite2'] = pygame.image.load('gfx/Medium_White_2.png')
         self.pictures['elysium'] = pygame.image.load('gfx/Elysium.png')
         self.pictures['sun'] = pygame.image.load('gfx/Sun.png')
+
+
+        smallfont = pygame.font.Font("font.ttf", 15)
+        smallfont.set_bold(True)
+
 
 
         space_rect = self.pictures['space'].get_rect()
@@ -332,13 +342,6 @@ class Game(object):
             for s in self.background:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
-            if self.debug:
-                for s in self.recharge:
-                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
-
-                for s in self.character:
-                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
-
             for s in self.obstacles:
                 s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
@@ -348,10 +351,18 @@ class Game(object):
             screen.blit(label, (10, 10))
 
             label = myfont.render("Coordinates: {}/{}".format(int(self.player.rect.x / 100), int(self.player.rect.y / 100)), 1, (90,90,90))
+            # label = myfont.render("Coordinates: {}/{}".format(int(self.player.rect.x), int(self.player.rect.y)), 1, (90,90,90))
             screen.blit(label, (10, 40))
 
             for s in self.character:
-                s.draw_text(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h, myfont)
+                s.draw_text(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h, smallfont)
+
+            if self.debug:
+                for s in self.recharge:
+                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
+
+                for s in self.character:
+                    s.draw(screen, self.player.rect.x - half_screen_w, self.player.rect.y - half_screen_h)
 
             pygame.display.flip()
 
@@ -423,7 +434,7 @@ class GameStart(object):
 
             screen.blit(cover, (200, 100))
 
-            label = myfont.render("Search for Elysium", 1, (200,200,200))
+            label = myfont.render("Early Access: Search for Elysium", 1, (200,200,200))
             screen.blit(label, (10, 100))
 
             label = smallfont.render("Find the hidden world of Elysium!", 1, (200,200,200))
